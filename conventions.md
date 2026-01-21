@@ -1,8 +1,5 @@
 
 # Conventions de code Tableau de type kanban 
-**IGL 201 : Exercice 1**
-
-Université de Sherbooke 
 
 
 ## Langage de programation
