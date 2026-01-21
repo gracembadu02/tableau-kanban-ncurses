@@ -1,11 +1,5 @@
 
 # Gestion d'un tableau du type kanban en ligne de commande 
-**IGL 201 : Exercice 1**
-
-Université de Sherbooke 
-
-
-
 
 
 
@@ -43,13 +37,6 @@ La priorité d'une tâche depend de sa couleur
 
 
 
-
-
-
-
-
-
-
 ## Installation et déploiement
 
 ### Prérequis
@@ -78,12 +65,6 @@ Dans le terminal tapez:
 ``` bash
 sudo apt-get install libncurses5-dev libncursesw5-dev
 ```
-
-
-
-
-
-
 
 
 
@@ -190,27 +171,6 @@ Est-ce que le readme.md doit couvrir tous les types de documentation ou juste ce
 
 
 
-
-
-## Organisation 
-
-### Feuille de route et vision du projet 
-
-#### Vision 
-Développer un tableau kanban fonctionnel en C++ avec ncurses pour gérer des tâches
-
-#### Jalons 
-Date de remise : 30 Janvier 2026 à 23heures 55 minutes 
- 
-#### Livrables 
-
-Fichier readme.md 
-Fichier conventions.md 
-Projet C++ dans le dossier src./
-
-
-### Contacts et points de communication
-Microsoft Teams
 
 
 
