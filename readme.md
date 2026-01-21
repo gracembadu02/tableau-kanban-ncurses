@@ -152,17 +152,7 @@ Chaque tâche crée, est mis dans la colonne `TODO`, précèdée du signe `>`
 **Solution**: Installer les dépendances avec les commandes mentionnés dans la section `Installation`
 
 
-### Messages d'aides et d'erreur clairs
 
-
-
-
-
-Quel niveau de détail il attend dans chaque section?
-
-Est-ce que certaines sections peuvent être omises si elles ne s'appliquent pas?
-
-Est-ce que le readme.md doit couvrir tous les types de documentation ou juste certains?
 
 
 
