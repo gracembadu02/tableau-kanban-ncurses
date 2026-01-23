@@ -27,10 +27,10 @@ Tableau::~Tableau()
     } 
     catch(...) 
     {
+         // Ignorer les erreurs lors du nettoyer
     }
 }
 
-//initialise la biblotheque ncurses pour l'affichage
 void Tableau::initialiser_ncurses() 
 {
     try
@@ -73,9 +73,9 @@ void Tableau::configurer_colonnes()
     try 
     {  
         // Crée les trois colonnes du tableau kanban
-        m_listeColonnes.push_back(make_unique<Column>("TODO"));
-        m_listeColonnes.push_back(make_unique<Column>("EN COURS"));
-        m_listeColonnes.push_back(make_unique<Column>("TERMINE"));
+        m_listeColonnes.push_back(make_unique<Colonne>("TODO"));
+        m_listeColonnes.push_back(make_unique<Colonne>("EN COURS"));
+        m_listeColonnes.push_back(make_unique<Colonne>("TERMINE"));
         
         m_decalagesDefilement.resize(m_numeroColonnes, 0);
         
@@ -112,9 +112,9 @@ void Tableau::creer_fenetres()
         for(int i = 0; i < m_numeroColonnes; i++) 
         {   
             // Calcule les dimensions de la fenetre
-            WINDOW* nouvelleFenetre = newwin(m_hauteurColonne, m_largeurColonne, 
-                               2, i * m_largeurColonne);
-            if(!nouvelleFenetre) throw runtime_error("E110  : impossible de créer la fenêtre");
+            WINDOW* nouvelleFenetre = newwin(m_hauteurColonne, m_largeurColonne, 2, i * m_largeurColonne);
+            if(!nouvelleFenetre) 
+                throw runtime_error("E110  : impossible de créer la fenêtre");
             m_colonnesFenetres.emplace_back(nouvelleFenetre, delwin);
         }
     } 
@@ -147,7 +147,7 @@ void Tableau::dessiner()
     } 
     catch(const exception& e) 
     {
-        throw runtime_error("E111 :  : erreur lors du dessin du tableau");
+        throw runtime_error("E111 : erreur lors du dessin du tableau");
     }
 }
 
@@ -157,7 +157,7 @@ void Tableau::dessiner_colonne(int index_colonne)
     {   
         // Verifie que l'index de la colonne est valide
         if(index_colonne < 0 || index_colonne >= m_numeroColonnes) 
-            throw runtime_error("E112  : indice de colonne invalide");
+            throw runtime_error("E112 : indice de colonne invalide");
         
         WINDOW* fenetre = m_colonnesFenetres[index_colonne].get();
         werase(fenetre);
@@ -177,23 +177,22 @@ void Tableau::dessiner_colonne(int index_colonne)
         wattron(fenetre, COLOR_PAIR(COULEUR_TITRE) | A_BOLD);
         mvwprintw(fenetre, 0, 2, " %s (%d) ", 
                   m_listeColonnes[index_colonne]->get_nom().c_str(), 
-                  m_listeColonnes[index_colonne]->taille_liste());
+                  m_listeColonnes[index_colonne]->taille());
         wattroff(fenetre, COLOR_PAIR(COULEUR_TITRE | A_BOLD));
         
         //Calcule le nombre de tâche a afficher 
-        int max_visible = (m_hauteurColonne - 4) / 4;
+        int maxVisible = (m_hauteurColonne - 4) / 4;
         int debutIndex = m_decalagesDefilement[index_colonne];
-        int finIndex  = min(debutIndex + max_visible, 
-                          m_listeColonnes[index_colonne]->taille_liste());
+        int finIndex  = min(debutIndex + maxVisible, m_listeColonnes[index_colonne]->taille());
         
         int y = 2;
         
         for(int i = debutIndex; i < finIndex; i++) 
         {
-            bool is_selected = (index_colonne == m_colonneCourante && i == m_tacheCourante);
+            bool isSelected = (index_colonne == m_colonneCourante && i == m_tacheCourante);
             dessiner_une_tache(fenetre, 
                                m_listeColonnes[index_colonne]->get_tache(i), 
-                               is_selected, y);
+                               isSelected, y);
             y += 4;
         }
         
@@ -203,7 +202,7 @@ void Tableau::dessiner_colonne(int index_colonne)
         }
         
         
-        if(finIndex < m_listeColonnes[index_colonne]->taille_liste()) 
+        if(finIndex < m_listeColonnes[index_colonne]->taille()) 
         {
             mvwprintw(fenetre, m_hauteurColonne - 2, m_largeurColonne - 3, "-"); // en bas
         }
@@ -221,7 +220,7 @@ void Tableau::dessiner_une_tache(WINDOW* fenetre, tache_ptr tache, bool selectio
     try 
     {  
         // Verifie que les parametres sont valides
-        if(!t) throw std::runtime_error("E114 : tâche nulle");
+        if(!tache) throw std::runtime_error("E114 : tâche nulle");
         if(!fenetre) throw std::runtime_error("E115 : fenêtre nulle");
         
         if(selectionne_tache) 
@@ -296,7 +295,8 @@ void Tableau::executer()
                 
                 int ch = getch(); // Attend une saisie du clavier
                 
-                swittouch(ch) {
+                switch(ch) 
+                {
                     case 'q':
                     case 'Q':
                             enCours = false;
@@ -346,6 +346,7 @@ void Tableau::executer()
             } 
             catch(const exception& e) 
             {
+
             }
         }
         
@@ -396,7 +397,7 @@ void Tableau::aller_vers_haut()
 
         if(m_tacheCourante < 0) 
         {
-            m_tacheCourante = m_listeColonnes[m_colonneCourante]->taille_liste() - 1;
+            m_tacheCourante = m_listeColonnes[m_colonneCourante]->taille() - 1;
         }
         if(m_tacheCourante < 0) m_tacheCourante = 0;
         
@@ -416,17 +417,17 @@ void Tableau::aller_vers_bas()
     try 
     {
         m_tacheCourante++;
-        if(m_tacheCourante >= m_listeColonnes[m_colonneCourante]->taille_liste()) 
+        if(m_tacheCourante >= m_listeColonnes[m_colonneCourante]->taille()) 
         {
             m_tacheCourante = 0;
         }
         
-        int max_visible = (m_hauteurColonne - 4) / 4;
+        int maxVisible = (m_hauteurColonne - 4) / 4;
         
         // Modifie le defilement si la tache depasse le cadre 
-        if(m_tacheCourante >= m_decalagesDefilement[m_colonneCourante] + max_visible) 
+        if(m_tacheCourante >= m_decalagesDefilement[m_colonneCourante] + maxVisible) 
         {
-            m_decalagesDefilement[m_colonneCourante] = m_tacheCourante - max_visible + 1;
+            m_decalagesDefilement[m_colonneCourante] = m_tacheCourante - maxVisible + 1;
         }
     } 
     catch(...) 
@@ -468,9 +469,8 @@ void Tableau::nouvelle_tache()
         if(priorite < 1) priorite = 1;
         if(priorite > 3) priorite = 3;
         
-        auto tache = make_shared<Tache>(m_identifiantSuivant++, 
-              string(titre), string(description), priorite);
-        m_listeColonnes[0]-> ajouter_tache(tache);
+        auto tache = make_shared<Tache>(m_identifiantSuivant++, string(titre), string(description), priorite);
+        m_listeColonnes[0]->ajouter_tache(tache);
         
         noecho();
         curs_set(0);
@@ -489,10 +489,10 @@ void Tableau::modifier_tache_actuelle()
     try 
     {   
         // Vérifie que la colonne contient au moins une tâche
-        if(m_listeColonnes[m_colonneCourante]->taille_liste() == 0) return;
+        if(m_listeColonnes[m_colonneCourante]->taille() == 0) return;
       
         auto tache = m_listeColonnes[m_colonneCourante]->get_tache(m_tacheCourante);
-        if(!tache) throw runtime_error(""E600 : tâche nulle"");
+        if(!tache) throw runtime_error("E600 : tâche nulle");
       
         echo();
         curs_set(1);
@@ -564,25 +564,25 @@ void Tableau::deplacer_tache_droite()
     {   
         // Vérifie que nous ne sommes pas dans la derniére colonne
         if(m_colonneCourante >= m_numeroColonnes - 1) return;
-        if(m_listeColonnes[m_colonneCourante]->taille_liste() == 0) return;
+        if(m_listeColonnes[m_colonneCourante]->taille() == 0) return;
         
         //Déplace la tâche vers la colonne de droite
         auto tache = m_listeColonnes[m_colonneCourante]->get_tache(m_tacheCourante);
-        m_listeColonnes[m_colonneCourante + 1]-> ajouter_tache(tache);
+        m_listeColonnes[m_colonneCourante + 1]->ajouter_tache(tache);
         m_listeColonnes[m_colonneCourante]->supprimer_tache(m_tacheCourante);
         
-        if(m_tacheCourante >= m_listeColonnes[m_colonneCourante]->taille_liste()) 
+        if(m_tacheCourante >= m_listeColonnes[m_colonneCourante]->taille()) 
         {
-            m_tacheCourante = m_listeColonnes[m_colonneCourante]->taille_liste() - 1;
+            m_tacheCourante = m_listeColonnes[m_colonneCourante]->taille() - 1;
             if(m_tacheCourante < 0) m_tacheCourante = 0;
         }
         
-        int max_visible = (m_hauteurColonne - 4) / 4;
+        int maxVisible = (m_hauteurColonne - 4) / 4;
 
         if(m_decalagesDefilement[m_colonneCourante] > 0 && 
-           m_listeColonnes[m_colonneCourante]->taille_liste() <= m_decalagesDefilement[m_colonneCourante] + max_visible) 
+           m_listeColonnes[m_colonneCourante]->taille() <= m_decalagesDefilement[m_colonneCourante] + maxVisible) 
         {
-            m_decalagesDefilement[m_colonneCourante] = max(0, m_listeColonnes[m_colonneCourante]->taille_liste() - max_visible);
+            m_decalagesDefilement[m_colonneCourante] = max(0, m_listeColonnes[m_colonneCourante]->taille() - maxVisible);
         }
     } 
     catch(const exception& e) 
@@ -598,26 +598,26 @@ void Tableau::deplacer_tache_gauche()
     {   
         // Vérifie que nous sommes dans la colonne TODO
         if(m_colonneCourante <= 0) return;
-        if(m_listeColonnes[m_colonneCourante]->taille_liste() == 0) return;
+        if(m_listeColonnes[m_colonneCourante]->taille() == 0) return;
         
         //deplace la tâche vers la gauche
         auto tache = m_listeColonnes[m_colonneCourante]->get_tache(m_tacheCourante);
         m_listeColonnes[m_colonneCourante - 1]->ajouter_tache(tache);
         m_listeColonnes[m_colonneCourante]->supprimer_tache(m_tacheCourante);
         
-        if(m_tacheCourante >= m_listeColonnes[m_colonneCourante]->taille_liste()) 
+        if(m_tacheCourante >= m_listeColonnes[m_colonneCourante]->taille()) 
         {
-            m_tacheCourante = m_listeColonnes[m_colonneCourante]->taille_liste() - 1;
+            m_tacheCourante = m_listeColonnes[m_colonneCourante]->taille() - 1;
             if(m_tacheCourante < 0) m_tacheCourante= 0;
         }
         
-        int max_visible = (m_hauteurColonne - 4) / 4;
+        int maxVisible = (m_hauteurColonne - 4) / 4;
         if(m_decalagesDefilement[m_colonneCourante] > 0 
-            && m_listeColonnes[m_colonneCourante]->taille_liste() <= 
-            m_decalagesDefilement[m_colonneCourante] + max_visible) 
+            && m_listeColonnes[m_colonneCourante]->taille() <= 
+            m_decalagesDefilement[m_colonneCourante] + maxVisible) 
         {
             m_decalagesDefilement[m_colonneCourante] = 
-            max(0, m_listeColonnes[m_colonneCourante]->taille_liste() - max_visible);
+            max(0, m_listeColonnes[m_colonneCourante]->taille() - maxVisible);
         }
     } 
     catch(const exception& e) 
@@ -632,26 +632,26 @@ void Tableau::supprimer_tache()
     try 
     {   
         // Vérifie qu'il existe  au moins une tache a supprimer
-        if(m_listeColonnes[m_colonneCourante]->taille_liste() == 0) return;
+        if(m_listeColonnes[m_colonneCourante]->taille() == 0) return;
         
         m_listeColonnes[m_colonneCourante]->supprimer_tache(m_tacheCourante);
         
         // Régler la selection après suppression
-        if(m_tacheCourante >= m_listeColonnes[m_colonneCourante]->taille_liste()) 
+        if(m_tacheCourante >= m_listeColonnes[m_colonneCourante]->taille()) 
         {
-            m_tacheCourante = m_listeColonnes[m_colonneCourante]->taille_liste() - 1;
+            m_tacheCourante = m_listeColonnes[m_colonneCourante]->taille() - 1;
             
             if(m_tacheCourante < 0) m_tacheCourante = 0;
         }
         
         // Régler le défilement si nécessaire
-        int max_visible = (m_hauteurColonne - 4) / 4;
+        int maxVisible = (m_hauteurColonne - 4) / 4;
         if(m_decalagesDefilement[m_colonneCourante] > 0 &&  
-            m_listeColonnes[m_colonneCourante]->taille_liste() <= 
-            m_decalagesDefilement[m_colonneCourante] + max_visible) 
+            m_listeColonnes[m_colonneCourante]->taille() <= 
+            m_decalagesDefilement[m_colonneCourante] + maxVisible) 
         {
             m_decalagesDefilement[m_colonneCourante] = 
-            max(0, m_listeColonnes[m_colonneCourante]->taille_liste() - max_visible);
+            max(0, m_listeColonnes[m_colonneCourante]->taille() - maxVisible);
         }
     } 
     catch(const exception& e) 
