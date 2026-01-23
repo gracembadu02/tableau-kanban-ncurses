@@ -1,65 +1,45 @@
-#pragma once 
+#pragma once
 
-#include <vector>
+#include <string>
 #include <memory>
-#include <stdexcept>
-#include "Tache.h"
 
-class Colonne
+class Tache 
 {
-    private:
-        std::string m_nom;
-        std::vector<tache_ptr> m_listeTaches;
-
     public:
-        Column(std::string nom)
-        {
-            if(nom.empty()) throw std::runtime_error("E001");
-                m_nom = nom;
-        }
+        int identifiant;
+        std::string titre;
+        std::string description;
+        int priorite;
 
-        ~Column() = default;
+    Tache(int identifiant, std::string titre, std::string description, int priorite)
+    {    
+        this->identifiant= identifiant; 
+        this->titre= titre; 
+        this->description= description; 
+        this->priorite= priorite;
+    }
+    
+    std::string get_titre()
+    {
+        return titre;
+    }
 
-        void ajouter_tache(tache_ptr nouvelle_tache) 
-        { 
-            //verifie si le pointeur de tâche est non null
-            if (!nouvelle_tache) throw std::runtime_error("E002");
-            m_listeTaches.push_back(nouvelle_tache);
-        }
+    std::string get_description()
+    {
+        return description;
+    }
 
-        bool supprimer_tache(int index) 
-        {
-            try
-            {   // verifier si l'index de la tâche à supprimer est valide
-                if (index < 0 || index>=static_cast<int>(m_listeTaches.size())) throw std::out_of_range("E003");
-                m_listeTaches.erase(m_listeTaches.begin() + index);
-                return true;
-            }
-            catch(const std::out_of_range& e) 
-            {
-            return false;
-            }
-        }
+    int get_priorite()
+    {
+        return priorite;
+    }
+    
+    void set_priorite(int priorite)
+    {
+        this->priorite =priorite; 
+    }
 
-        tache_ptr get_tache(int position) 
-        {   
-            if(position < 0 || position >= static_cast<int>(m_listeTaches.size()))
-                throw std::out_of_range("E004");
-            return m_listeTaches[position];
-        }
-
-        int taille_liste() 
-        { 
-            return m_listeTaches.size(); 
-        }
-
-        std::string get_nom() 
-        { 
-            return m_nom; 
-        }
-
-        std::vector<tache_ptr>& get_listetaches() 
-        { 
-            return m_listeTaches; 
-        }
 };
+// Alias pour un pointeur partagé vers une tâche
+using tache_ptr = std::shared_ptr<Tache>;
+
