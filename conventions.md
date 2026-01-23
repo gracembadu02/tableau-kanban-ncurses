@@ -24,10 +24,10 @@ Français
 
 
 
-### Variables 
-+ **Convention** : snake_case
+### Variables locales contenues dans les fonctions
++ **Convention** : camelCase
 + **Exemples** :
-  + `is_selected`
+  + `isSelected`
 
 
 
@@ -37,14 +37,6 @@ Français
   + `COL_DEFAULT = 1`
 
 
-
-### Variables globales 
-+ **Convention** : Préfixe g_ and  Pascalcase
-+ **Exemple** :
-  + ` g_compteurGlobal`
-
-
-
 ### Membres privés de la classe
 + **Convention** : Préfixe m_ and camelCase
 + **Exemples** :
@@ -52,8 +44,7 @@ Français
 
 
 
-
-### Variable = Rôle 
+### Variables = Rôle, des variables qui servent de paramètres dans les fonctions
 + **Convention** : snake_case
 + **Exemples** :
   + `Tache tache_selectionnee`
@@ -78,14 +69,6 @@ Français
 
 
 
-### Méthodes de calcul
-+ **Convention** : Contextualisé and camelCase
-+ **Exemples** :
-  + `drawColumn()`
-
-
-
-
 ### Collections
 + **Convention** : Avec type and camelCase
 + **Exemples** :
@@ -93,9 +76,9 @@ Français
 
 
 
-
 ### largeurs maximum de ligne
-+ **Convention** : 80 caractère par ligne 
++ **Convention** : 200 caractères  
+
 
 
 ### Styles de blocs 
